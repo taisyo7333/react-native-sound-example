@@ -20,14 +20,22 @@ class sound_test extends Component {
   constructor() {
     super();
     /* Bind Member function for using 'this'. */
-    this._onPressPlay   = this._onPressPlay.bind(this);
-    this._onPressStop   = this._onPressStop.bind(this);
-    this._onPressResume = this._onPressResume.bind(this);
-    this._onPressPause  = this._onPressPause.bind(this);
+    this._onPressPlay     = this._onPressPlay.bind(this);
+    this._onPressStop     = this._onPressStop.bind(this);
+    this._onPressResume   = this._onPressResume.bind(this);
+    this._onPressPause    = this._onPressPause.bind(this);
+    this._onPressVolPlus  = this._onPressVolPlus.bind(this);
+    this._onPressVolMinus = this._onPressVolMinus.bind(this);
+    this._truncateVolume  = this._truncateVolume.bind(this);
+    this._getSoundVolume  = this._getSoundVolume.bind(this);
+
+    this.state = {
+      volume:  50, /* 0 ~ 100 : */
+    }
 
     this.whoosh = new Sound('whoosh.mp3',
                             /* your path here */
-                            Sound.DOCUMENT,
+                            '/tmp'
                            /* Exit Event */
                            (error) => {
 
@@ -79,13 +87,34 @@ class sound_test extends Component {
       </View>
       </TouchableHighlight>
 
+      <TouchableHighlight onPress={this._onPressVolPlus}>
+      <View style={styles.button}>
+      <Text>+</Text>
       </View>
+      </TouchableHighlight>
+
+      <TouchableHighlight onPress={this._onPressVolMinus}>
+      <View style={styles.button}>
+      <Text>-</Text>
+      </View>
+      </TouchableHighlight>
+
+      <View>
+      <Text>Volume = {this.state.volume}</Text>
+      </View>
+
+      </View>
+
     );
+  }
+
+  _getSoundVolume() {
+    return this.state.volume / 100;
   }
 
   _onPressPlay() {
     console.log('OnPlay');
-
+    this.whoosh.setVolume( this._getSoundVolume() );
     /*     whoosh.setVolume(0.5); */
     this.whoosh.setPan(1);
     this.whoosh.setNumberOfLoops(0);
@@ -112,6 +141,9 @@ class sound_test extends Component {
 
   _onPressResume() {
     console.log('OnResume');
+
+    this.whoosh.setVolume( this._getSoundVolume() );
+
     this.whoosh.play((success)=>{
       if(success) {
         console.log('successfully finished playing');
@@ -124,6 +156,26 @@ class sound_test extends Component {
   _onPressPause() {
     console.log('OnPause');
     this.whoosh.pause();
+  }
+
+  _onPressVolPlus() {
+    var vol = this._truncateVolume( this.state.volume + 10 );
+    this.whoosh.setVolume( this._getSoundVolume() );
+    this.setState( {volume: vol } );
+
+    console.log("The volume is ",this.state.volume);
+  }
+  _onPressVolMinus() {
+    var vol = this._truncateVolume( this.state.volume - 10 );
+    this.whoosh.setVolume( this._getSoundVolume() );
+    this.setState( {volume: vol } );
+
+    console.log("The volume is ",this.state.volume);
+  }
+  _truncateVolume(vol) {
+    if( vol < 0 )  return 0;
+    else if( 100 < vol ) return 100;
+    else return vol;
   }
 }
 
